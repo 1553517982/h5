@@ -13,8 +13,22 @@ import struct
 import binascii
 import zipfile
 import json
+import chardet
+import codecs
 
-
+inputDir = ""
+outputDir = ""
+pre_md5conf = {}
+compressFolders = {}
+ecodingFolders={}
+zipFolders={}
+changedCount = 0
+publishVersion = ""
+projectPath = ""
+publishPath = ""
+runPath = ""
+jpgQualityValue=str(30)
+pngQualityValue=str(30)
 totalBytes = 0
 
 #打包目录为zip文件（未压缩）
@@ -29,7 +43,25 @@ def make_zip(source_dir, output_filename):
       zipf.write(pathfile, arcname)
   zipf.close()
 
-
+def run_coding(file_dir):
+    #需要把文件改成编码的格式
+    for root, dirs, files in os.walk(file_dir, topdown=False):
+        for i in files:
+            files_name = os.path.join(root, i)
+            if(files_name.find('.json') <> -1 or files_name.find('.fnt') <> -1 ):
+                f = open(files_name,'r')
+                content = f.read()
+                f.close()
+                coding=chardet.detect(content)
+                print files_name
+                fileCoding  = coding.get('encoding')
+                print fileCoding
+                if not (fileCoding =='utf-8'):
+                  content=codecs.decode(content,'gbk')
+                  content = codecs.encode(content,'utf-8')
+                  fw=open(files_name,'w')
+                  fw.write(content)
+                  fw.close()
 
 def make_jsons_to_one(src):
       global inputDir
@@ -168,8 +200,14 @@ def make_jsons_to_buffer(src):
                 #如果是需要压缩的文件夹 直接zip打包
                 if needZipFolder:
                     outFileName = root.replace(inputDir,outputDir)
-                    outName = outFileName+"\\" +dirName+ ".json"
-                    make_Buffer(root+"\\"+dirName,outName)  
+                    outName = root+"\\" +dirName+ ".json"
+                    outZipName = outFileName+"\\" +dirName+ ".json"
+                    make_Buffer(root+"\\"+dirName,outName)
+                    zipf = zipfile.ZipFile(outZipName, 'w',zipfile.ZIP_DEFLATED)
+                    zipf.write(outName, dirName+ ".json")
+                    zipf.close()
+                    os.remove(outName)
+      
 
 def make_Buffer(source_dir, output_filename):
   pre_len = len(os.path.dirname(source_dir))
@@ -218,18 +256,6 @@ def GetFileMd5(filename):
     f.close()
     return myhash.hexdigest()
 
-pre_md5conf = {}
-
-inputDir = ""
-outputDir = ""
-compressFolders = {}
-zipFolders={}
-changedCount = 0
-publishVersion = ""
-projectPath = ""
-publishPath = ""
-runPath = ""
-
 def walkFolder(folder, rlist):
     global inputDir
     global outputDir
@@ -238,7 +264,8 @@ def walkFolder(folder, rlist):
             walkFolder(dirName, rlist)
         for fileName in files:
             a = fileName.find(".png")
-            if a <> -1:
+            b = fileName.find(".jpg")
+            if a <> -1 or b <> -1:
                 filePath = os.path.join(root, fileName)
                 if os.path.abspath(filePath) == filePath:
                     fileMd5 = GetFileMd5(filePath)
@@ -283,33 +310,50 @@ def saveMd5():
 
 def action(filePath):
     a = filePath.find(".png")
+    b = filePath.find(".jpg")
     global inputDir
     global outputDir
     global changedCount
+    global pngQualityValue
+    global jpgQualityValue
+    
     if a <> -1:
         outFileName = filePath.replace(inputDir,outputDir)
         dirName = os.path.dirname(outFileName)
         if not os.path.exists(dirName):
             os.makedirs(dirName)
 
-        cmd = "pngquant.exe --force --output "+ outFileName + " --quality 30-30 %s"%(filePath)
+        cmd = "pngquant.exe --force --output "+ outFileName + " --quality "+pngQualityValue+"-"+pngQualityValue+" %s"%(filePath)
         os.popen(cmd)
 	changedCount = changedCount + 1
 	print(filePath + "\n")
+    elif b <> -1:
+        outFileName = filePath.replace(inputDir,outputDir)
+        dirName = os.path.dirname(outFileName)
+        if not os.path.exists(dirName):
+            os.makedirs(dirName)
+        
+        cmd = "TexturePacker " + filePath + " --jpg-quality "+ jpgQualityValue +" --allow-free-size --disable-rotation --padding 0  --sheet " + outFileName
+        os.popen(cmd)
+	changedCount = changedCount + 1
 
 def loadConf():
     global inputDir
     global outputDir
     global compressFolders
+    global ecodingFolders
     global projectPath
     global publishPath
     global pub
     global runPath
     global zipFolders
+    global jpgQualityValue
+    global pngQualityValue
     
     iniPath = runPath + "\\config.ini" 
     cf=ConfigParser.ConfigParser()
     cf.read(iniPath)
+    ConfigParser.ConfigParser.has_section
     
     inputDir = cf.get("path","inputpath")
     outputDir = cf.get("path","outputpath")
@@ -317,6 +361,11 @@ def loadConf():
     zipFolders=cf.items("zipfolders")
     projectPath = inputDir + "\\..\\"
     publishPath = projectPath + "\\bin-release\\web\\" + publishVersion
+    if(cf.has_section('compressQuality')):
+        jpgQualityValue = cf.get("compressQuality","jpg")
+        pngQualityValue = cf.get("compressQuality","png")
+    if(cf.has_section('changeForlderCoding')):
+        ecodingFolders = cf.items('changeForlderCoding')
     
 def compressPathPng(path):
     file_path = {}
@@ -447,11 +496,21 @@ def testPackJson():
     subJson = json.loads("{\"a\":[1,2,\"3\",0.05,4,5]}")
     print packDic(subJson)
 
+def addTexturPackerPath():
+    runPath = os.path.abspath('.')
+    os.environ["PATH"] = os.environ["PATH"]+";"+ runPath+'/bin'
+
+def change_coding():
+    global ecodingFolders
+    global outputDir
+    for pairs in ecodingFolders:
+        run_coding( outputDir + pairs[1])
     
 def run():
         global runPath
         global publishVersion
 
+        addTexturPackerPath()
         runPath = os.path.abspath('.')
         #记录更新时间点 当作发布版本号
         publishVersion=datetime.datetime.now().strftime('%Y%m%d%H%M')
@@ -478,6 +537,7 @@ def run():
         #make_jsons_to_one(inputDir)
         make_jsons_to_buffer(inputDir)
         #testPackJson()
+        change_coding()
         os.system("pause")
 
 

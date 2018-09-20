@@ -93,6 +93,7 @@ def replaceSubStr(subStr):
         return afterText
 
 def formatStr(paramStr):
+        paramStr = paramStr.strip()
         paramStr = paramStr.replace('//',' // ')
         paramStr = paramStr.replace(':',' : ')
         paramStr = paramStr.replace('(',' ( ')
@@ -132,7 +133,20 @@ def replaceFileContent(filePath):
                 aftertext=aftertext.replace(' (','(')
                 aftertext=aftertext.replace('( ','(')
                 aftertext=aftertext.replace('// ','//')
-                newcontent = newcontent + aftertext
+                aftertext=aftertext.replace(' [','[')
+                aftertext=aftertext.strip()
+                if(len(aftertext)>0):
+                        if(aftertext[0:2] == '//'):
+                                #print('need ignore')
+                                a = 1
+                        elif(aftertext[0:11] == 'console.log'):
+                                #print('is log ')
+                                b = 1
+                        elif(aftertext[0:9] == 'egret.log'):
+                                #print('is log ')
+                                c = 1
+                        else:        
+                                newcontent = newcontent + aftertext+'\n'
 
         outpath = os.path.abspath(filePath)
         global inputDir
@@ -141,6 +155,14 @@ def replaceFileContent(filePath):
         if(not os.path.exists(newPath)):
                 if(not os.path.exists(os.path.dirname(newPath))):
                         os.mkdir(os.path.dirname(newPath))
+
+        while(True):
+                firstIndex = newcontent.find('/*')
+                nextIndex = newcontent.find('*/')
+                if(firstIndex> -1 and nextIndex>-1 and nextIndex>firstIndex ):
+                      newcontent = newcontent.replace(newcontent[firstIndex:nextIndex+2],' ')  
+                else:
+                        break
         f = open(newPath,"w+")
         f.write(newcontent)
         f.close()
@@ -190,9 +212,11 @@ if __name__ == '__main__':
                 ignoreList.setdefault(item[1],item[1])
     
     #extend keywords need mix
+    extendlist = {}
     items = conf.items("needmix")
     if (len(items)>0):
             for item in items:
+                    extendlist.setdefault(item[1],item[1])
                     classNameList.append(item[1])
 
     classNameList.sort()
@@ -210,7 +234,8 @@ if __name__ == '__main__':
         else:
                 replaceClassName = "a"+str(index)
                 content = content + "\""+className+"\"="+ replaceClassName +"\n"
-                content2 = content2 + "window[\""+replaceClassName+"\"]="+replaceClassName+"\n"
+                if not extendlist.has_key(className):
+                        content2 = content2 + "window[\""+replaceClassName+"\"]="+replaceClassName+"\n"
                 reflactList.setdefault(className,replaceClassName)
                 index = index + 1
         
@@ -218,7 +243,7 @@ if __name__ == '__main__':
     replacePathFileContent(path,file_type_list)
 
     #out put class define 
-    fclassDefine = open(outputDir+"ClassNameConfig.ts","w+")
+    fclassDefine = open(outputDir+"/ClassNameConfig.ts","w+")
     fclassDefine.write(content2)
     fclassDefine.close()
     
