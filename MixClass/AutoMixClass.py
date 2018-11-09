@@ -145,6 +145,15 @@ def replaceFileContent(filePath):
                         elif(aftertext[0:9] == 'egret.log'):
                                 #print('is log ')
                                 c = 1
+                        elif(aftertext[0:10] == 'egret.warn'):
+                                #print('is log ')
+                                c = 1
+                        elif(aftertext[0:12] == 'console.warn'):
+                                c = 2
+                        elif(aftertext[0:13] == 'console.error'):
+                                c = 3
+                        elif(aftertext[0:11] == 'egret.error'):
+                                c = 3
                         else:        
                                 newcontent = newcontent + aftertext+'\n'
 

@@ -774,10 +774,68 @@ def compressCfgFile(files_name):
       f.close()
 
 
+def compress_cfg(source_dir):
+  pre_len = len(os.path.dirname(source_dir))
+  global inputDir
+  global outputDir
+  global totalBytes
+  global remoteCfgJson
+  
+  
+  typeDic = 1
+  typeList = 2
+  typeStr = 3
+  typeNum = 4
+  typeJsonKey = 80
+  remoteCfgJson = {}
+  content = ""
+  outName = ""
+  preName = ""
+  cfgKeys = ""
+  outPath = ""
+  
+  for parent, dirnames, filenames in os.walk(source_dir):
+    for filename in filenames:
+      if filename.find('.json')<>-1:        
+        pathfile = os.path.join(parent, filename)
+        outPath = pathfile.replace('.json','_json')
+        
+        arcname = pathfile[pre_len:].strip(os.path.sep)   #相对路径
+        f = open(pathfile,'r')
+        nameKey = filename.replace('.json','_json')
+        subJson = json.loads(f.read())
+        f.close()
+        binFileContent=""
+        fileContent = ""
+        #文件key
+        ret = struct.pack('!i',len(nameKey))
+        param = str(len(nameKey))+'s'
+        ret = ret + struct.pack(param,nameKey)
+        #文件内容
+        totalBytes=0
+        fileContent = packData(subJson)
+        ret = ret + struct.pack('!i',totalBytes)
+        #字节流文件 文件头信息+文件内容
+        binFileContent = ret + fileContent
+        
+        countRet = struct.pack('!i',1)
+        of = open(outPath,'wb+')
+        of.write(countRet+binFileContent)
+        of.close()
+
+        zipFileName=filename.replace('.json','.bin')
+        zipf = zipfile.ZipFile(zipFileName, 'w',zipfile.ZIP_DEFLATED)
+        zipf.write(outPath, nameKey)
+        zipf.close()
+        
+        os.remove(outPath)        
+
+
 def run():
         global runPath
         global publishVersion
         global inputDir
+        global zipFolders
         
         addTexturPackerPath()
         runPath = os.path.abspath('.')
@@ -790,29 +848,33 @@ def run():
         #更新项目svn目录
         svnUpdate()
 
+        #压缩配置
+        for pair in zipFolders:
+          compress_cfg(inputDir+pair[1])
+        
         #发布目录
-        publishProject()
+        #publishProject()
                 
         #拷贝编译脚本
-        copyScripts()
+        #copyScripts()
         
         #加载md5文件
-        loadMd5()
+        #loadMd5()
         #压缩需要压缩的文件
         #compressPng()
         #拷贝其他资源文件
-        copyResource()
+        #copyResource()
         #make_jsons_to_one(inputDir)
         #make_jsons_to_buffer(inputDir)
         
         #testPackJson()
-        compressJsons()
+        #compressJsons()
         #打包配置文件
         #make_jsons_to_Multi_buffer(inputDir)
         #生成增量更新的resJson
-        make_resJson()
+        #make_resJson()
 
-        change_coding()
+        #change_coding()
 
         #saveMd5()
         os.system("pause")
