@@ -16,12 +16,14 @@ import json
 import chardet
 import codecs
 
+
 inputDir = ""
 outputDir = ""
 pre_md5conf = {}
 pre_versionconf = {}
 compressFolders = {}
 ecodingFolders={}
+packFolders = {}
 zipFolders={}
 changedCount = 0
 publishVersion = ""
@@ -32,6 +34,7 @@ jpgQualityValue=str(30)
 pngQualityValue=str(30)
 totalBytes = 0
 remoteCfgJson = {}
+resVersion="1.0"
 
 #打包目录为zip文件（未压缩）
 def make_zip(source_dir, output_filename):
@@ -63,7 +66,6 @@ def run_coding(file_dir):
                   fw=open(files_name,'w')
                   fw.write(content)
                   fw.close()
-
 
 def make_jsons_to_one(src):
       global inputDir
@@ -315,7 +317,9 @@ def make_Buffer(source_dir, output_filename):
       if filename.find('.json')<>-1:
         pathfile = os.path.join(parent, filename)
         arcname = pathfile[pre_len:].strip(os.path.sep)   #相对路径
-        
+        f = open(pathfile,'r')
+        nameKey = filename.replace('.json','_json')
+        subJson = json.loads(f.read())
         f.close()
 
         ret = struct.pack('!i',len(nameKey))
@@ -347,47 +351,60 @@ def GetFileMd5(filename):
 def walkFolder(folder, rlist):
     global inputDir
     global outputDir
+    global pre_md5conf
+    global pre_versionconf
+
+    if folder.find(".svn") <> -1:
+        return
     for root, dirs, files in os.walk(folder):
         for dirName in dirs:
-            walkFolder(dirName, rlist)
+            if folder.find(".svn") <> -1:
+                continue
+            else:
+                subforlder = os.path.join(root, dirName)
+                walkFolder(subforlder, rlist)
         for fileName in files:
                 filePath = os.path.join(root, fileName)
+                if os.path.abspath(filePath).find(".svn") <> -1:
+                    continue
                 if os.path.abspath(filePath) == filePath:
                     fileMd5 = GetFileMd5(filePath)
                     relativePath = filePath.replace(inputDir,"")
-                    preVer = ""
+
+                    preVer = "0"
+                    rlist[relativePath] = filePath
                     if pre_md5conf.has_key(relativePath):
-                        if not (fileMd5 == pre_md5conf[relativePath]):
-                            rlist[relativePath] = filePath
-                            preVer = pre_versionconf[relativePath]
-                            pre_versionconf[relativePath] = str(int(pre_versionconf[relativePath])+1)
+                        preVer = pre_versionconf[relativePath]
+                        preMd5 = pre_md5conf[relativePath]
+                        if not (fileMd5 == preMd5 ):
+                            pre_versionconf[relativePath] = str(int(preVer)+1)
                             preVer = pre_versionconf[relativePath]
                         pre_md5conf[relativePath] = fileMd5
                         pre_versionconf[relativePath] = preVer
                     else:
                         rlist[relativePath] = filePath
                         pre_md5conf.setdefault(relativePath,fileMd5)
-                        pre_versionconf.setdefault(filePath,"1")
+                        pre_versionconf.setdefault(relativePath,preVer)
 
 
 #load file md5 list
 def loadMd5():
     global runPath
-    path = runPath + "\\fileMd5"
+    global outputDir
+    global pre_versionconf
+    global pre_md5conf
+    path = outputDir + "..\\fileMd5"
     if not os.path.exists(path):
         return 
     md5file = open(path,"r")
     
     for text in md5file.readlines():
-        part = text.split('\t\t\t',1)
-        if len(part) > 1:
-            filePath = part[0].strip()
-            md5 = str(part[1]).strip()
-            ver = "0"
-            if len(part) > 2:  
-              ver = str(part[2]).strip()
-            pre_versionconf.setdefault(filePath,ver)
-            pre_md5conf.setdefault(filePath,md5) 
+        part = text.split('\t\t\t')
+        filePath = part[0].strip()
+        md5 = str(part[1]).strip()
+        ver = str(part[2]).strip()
+        pre_versionconf.setdefault(filePath,ver)
+        pre_md5conf.setdefault(filePath,md5)
     md5file.close()
     print("load md5 sucess")
     
@@ -396,7 +413,7 @@ def saveMd5():
     global runPath
     global pre_md5conf
     global pre_versionconf
-    path = runPath + "\\fileMd5"  
+    path = outputDir + "..\\fileMd5"
     md5file = open(path, 'w+')
     filecontent = ""
     for filePath in pre_md5conf :
@@ -459,12 +476,11 @@ def loadConf():
     global zipFolders
     global jpgQualityValue
     global pngQualityValue
-    
+    global packFolders
+    global resVersion
     iniPath = runPath + "\\config.ini" 
     cf=ConfigParser.ConfigParser()
     cf.read(iniPath)
-    ConfigParser.ConfigParser.has_section
-    
     inputDir = cf.get("path","inputpath")
     outputDir = cf.get("path","outputpath")
     compressFolders=cf.items("compressfolders")
@@ -476,6 +492,8 @@ def loadConf():
         pngQualityValue = cf.get("compressQuality","png")
     if(cf.has_section('changeForlderCoding')):
         ecodingFolders = cf.items('changeForlderCoding')
+    if (cf.has_section('packfolder')):
+        packFolders = cf.items("packfolder")
     
 def compressPathPng(path):
     file_path = {}
@@ -616,6 +634,151 @@ def change_coding():
     for pairs in ecodingFolders:
         run_coding( outputDir + pairs[1])
 
+#生成资源管理的json
+def make_resJson():
+    global outputDir
+    global inputDir
+    global packFolders
+    global pre_versionconf
+    global pre_md5conf
+    global resVersion
+    global publishVersion
+    #resource下所有需要打包的文件
+    file_path = {}
+    for dir in packFolders:
+        walkFolder(inputDir+dir[1],file_path)
+
+    resjsonPath = inputDir+'default.res.json'
+    f = open(resjsonPath,'r')
+    
+    jsonObj = json.loads(f.read())
+    f.close()
+
+    print(len(jsonObj["groups"]))
+    jsonObj["resources"] = []
+    fileTypeKind = {}
+    fileTypeKind["png"] = "image"
+    fileTypeKind["jpg"] = "image"
+    fileTypeKind["json"] = "json"
+    fileTypeKind["webp"] = "image"
+    fileTypeKind["fnt"] = "font"
+    fileTypeKind["pvr"] = "pvr"
+    fileTypeKind["mp3"] = "sound"
+    fileTypeKind["sheet"] = "sheet"
+    fileTypeKind["exml"] = "text"
+    fileTypeKind["zip"] = "zip"
+    fileTypeKind["mif"] = "bin"
+    fileTypeKind["bin"] = "bin"
+
+
+    binKeys=""
+    binKeysPre=""
+    for resPath in file_path:
+        cfg = {}
+        fileName, fileType = os.path.splitext(resPath)
+        kind = fileType.replace('.','')
+        if( kind == "exml" or kind == ""):
+          continue
+        #print fileName ,kind
+        #合图的json需要按照sheet来解析
+        newVersion = ""
+        if(pre_versionconf.has_key(resPath)) and int(pre_versionconf[resPath]) > 0 :
+            newVersion = str(pre_versionconf[resPath])
+
+        oldName = resPath
+        #newName = fileName + newVersion + fileType
+        #不能用这种方式   只能用文件夹来当版本号
+        tmpDirName = os.path.dirname(resPath)
+        index = tmpDirName.find('/')
+        if(index < 0):
+            index = tmpDirName.find('\\')
+        firstFolder = tmpDirName
+        if index >= 0:
+          firstFolder = tmpDirName[0:index]
+        versionDir=tmpDirName
+        if(newVersion != ""):
+          versionDir = tmpDirName.replace(firstFolder,firstFolder+"_ver"+newVersion,1)
+        newName = resPath.replace(os.path.dirname(resPath),versionDir)
+        unuse ,fileName = os.path.split(resPath)
+        fileName = fileName.replace(fileType,'')
+        fileKey = fileName + "_"+kind
+        isSheet=False
+        sheetName=""
+        if( kind == "json"):
+            sheetJson = open(inputDir+resPath, 'r')
+            sheetJsonObj = json.loads(sheetJson.read())
+            sheetJson.close()
+            if isinstance(sheetJsonObj,dict) and sheetJsonObj.has_key("file") and sheetJsonObj.has_key("frames"):
+                cfg.setdefault("url", newName)
+                cfg.setdefault("type", "sheet")
+                isSheet = True
+                sheetName=sheetJsonObj["file"]
+                cfg.setdefault("name", fileName + "_" + kind)
+                subkeys = ""
+                subkeysPre = ""
+                for subkey in sheetJsonObj["frames"].keys():
+                    subkeysPre = subkeys + subkey
+                    subkeys = subkeys + subkey + ','
+                subkeys = subkeysPre
+                sheetJson = open(outputDir + resPath, 'w+')
+                contents = json.dumps(sheetJsonObj)
+                sheetJson.write(contents)
+                sheetJson.close()
+                cfg.setdefault("subkeys", subkeys)
+            else:
+                cfg.setdefault("url", newName)
+                cfg.setdefault("type", fileTypeKind[kind])
+                cfg.setdefault("name", fileName + "_" + kind)
+        else:
+            cfg.setdefault("url", newName)
+            cfg.setdefault("type", fileTypeKind[kind])
+            cfg.setdefault("name", fileName + "_"+kind)
+        jsonObj["resources"].append(cfg)
+        
+        if not os.path.exists(outputDir+versionDir):
+            os.makedirs(outputDir+ versionDir)
+        if not os.path.exists(outputDir+newName):
+            shutil.copy(outputDir + oldName, outputDir + newName)
+
+        if isSheet:
+            if os.path.exists(outputDir + tmpDirName + "/" + sheetName):
+                os.remove(outputDir + tmpDirName + "/" + sheetName)
+            shutil.copy(inputDir + tmpDirName+"/"+sheetName, outputDir + tmpDirName + "/" + sheetName)
+        #移除bin生成文件
+        if kind == "bin":
+            binKeysPre=binKeys+fileKey  
+            binKeys=binKeysPre+","
+            os.remove(inputDir+resPath)
+
+    binKeys = binKeysPre
+    binGroupCfg={}
+    binGroupCfg.setdefault("name","binConfig")
+    binGroupCfg.setdefault("keys",binKeys)
+    jsonObj["groups"].append(binGroupCfg)
+    
+    #先添加配置分组
+    fileContents = json.dumps(jsonObj,indent=0,separators=(',', ':'))
+    fileContents = fileContents.replace('\\\\', '/')
+    fileContents = fileContents.replace(': ', ':')
+
+
+    publishIniPath = outputDir + "..\\publish.ini"
+    cf = ConfigParser.ConfigParser()
+    cf.read(publishIniPath)
+    mainVersion = cf.get("version","mainVersion");
+    subVersion = cf.get("version", "subVersion");
+    f = open(outputDir+'default.res'+ mainVersion + "." + subVersion + '.json','w+')
+    f.write(fileContents)
+    f.close()
+    cf.set("version","subVersion",str(int(subVersion)+1))
+    cf.set("version","publishTime",publishVersion)
+    cf.write(open(outputDir + "..\\publish.ini","wb"))
+
+def compressJsons():
+    global packFolders
+    global outputDir
+    for pairs in packFolders:
+        compressCfg( outputDir + pairs[1])
 
 def compressCfg(file_dir):
     for root, dirs, files in os.walk(file_dir, topdown=False):
@@ -626,55 +789,102 @@ def compressCfg(file_dir):
 def compressCfgFile(files_name):
     if files_name.find('.json') <> -1:
       f = open(files_name,'r')
-      jsonObj = json.loads(f.read())
+      content = f.read()
+      coding=chardet.detect(content)
+      fileCoding  = coding.get('encoding')
+      if not (fileCoding =='utf-8'):
+        content=codecs.decode(content,'gbk')
+        content = codecs.encode(content,'utf-8')
+      jsonObj = json.loads(content)
       f.close()
-      fileContents = json.dumps(jsonObj)
-      f = open(files_name,'w+')
+      fileContents = json.dumps(jsonObj,ensure_ascii=False,indent=0,separators=(',', ':'))
+      f = codecs.open(files_name,'w+','utf-8')
       f.write(fileContents)
       f.close()
 
-#生成资源管理的json
-def make_resJson():
-    global outputDir
-    global inputDir
-    global remoteCfgJson
-    
-    resjsonPath = inputDir+'default.res.json'
-    f = open(resjsonPath,'r')
-    
-    jsonObj = json.loads(f.read())
-    f.close()
-    print(len(jsonObj["resources"]))
-    print(len(jsonObj["groups"]))
 
-    cfgKeys = ""
-    for key in remoteCfgJson:
-        cfgKeys = cfgKeys + key + ','
-        cfg = {}
-        cfg.setdefault("url",remoteCfgJson[key])
-        cfg.setdefault("type",'bin')
-        cfg.setdefault("name",key)
-        jsonObj["resources"].append(cfg)
-    print(cfgKeys)
-    keyLenth = len(cfgKeys);
-    cfgKeys = cfgKeys[0:keyLenth-1]
-    cfgObj = {}
-    cfgObj.setdefault("keys",cfgKeys)
-    cfgObj.setdefault("name","remoteConfig")
-    jsonObj["groups"].append(cfgObj)
-    print(len(jsonObj["groups"]))
-    print(len(jsonObj["resources"]))
-    #先添加配置分组
-    fileContents = json.dumps(jsonObj)
-    f = open(outputDir+'default.res.json','w+')
-    f.write(fileContents)
-    f.close()
-    
-    
+def compress_cfg(source_dir):
+  pre_len = len(os.path.dirname(source_dir))
+  global inputDir
+  global outputDir
+  global totalBytes
+  global remoteCfgJson
+  
+  
+  typeDic = 1
+  typeList = 2
+  typeStr = 3
+  typeNum = 4
+  typeJsonKey = 80
+  remoteCfgJson = {}
+  content = ""
+  outName = ""
+  preName = ""
+  cfgKeys = ""
+  outPath = ""
+  
+  for parent, dirnames, filenames in os.walk(source_dir):
+    for filename in filenames:
+      if filename.find('.json')<>-1:        
+        pathfile = os.path.join(parent, filename)
+        outPath = pathfile.replace('.json','_json')
+        
+        arcname = pathfile[pre_len:].strip(os.path.sep)   #相对路径
+        f = open(pathfile,'r')
+        nameKey = filename.replace('.json','_json')
+        subJson = json.loads(f.read())
+        f.close()
+        binFileContent=""
+        fileContent = ""
+        #文件key
+        ret = struct.pack('!i',len(nameKey))
+        param = str(len(nameKey))+'s'
+        ret = ret + struct.pack(param,nameKey)
+        #文件内容
+        totalBytes=0
+        fileContent = packData(subJson)
+        ret = ret + struct.pack('!i',totalBytes)
+        #字节流文件 文件头信息+文件内容
+        binFileContent = ret + fileContent
+        
+        countRet = struct.pack('!i',1)
+        of = open(outPath,'wb+')
+        of.write(countRet+binFileContent)
+        of.close()
+
+        zipFileName=pathfile.replace('.json','.bin')
+        if(os.path.exists(zipFileName)):
+          os.remove(zipFileName)
+        zipf = zipfile.ZipFile(zipFileName, 'w',zipfile.ZIP_DEFLATED)
+        zipf.write(outPath, nameKey)
+        zipf.close()
+        
+        os.remove(outPath)
+
+
+def compress_cfg2(source_dir):
+    global inputDir
+    global outputDir
+
+    for parent, dirnames, filenames in os.walk(source_dir):
+        for filename in filenames:
+            if filename.find('.json') <> -1:
+                pathfile = os.path.join(parent, filename)
+                nameKey = filename.replace('.json', '_json')
+                zipFileName = pathfile.replace('.json', '.bin')
+
+                if (os.path.exists(zipFileName)):
+                    os.remove(zipFileName)
+
+                zipf = zipfile.ZipFile(zipFileName, 'w', zipfile.ZIP_DEFLATED)
+                zipf.write(pathfile, nameKey)
+                zipf.close()
+
 def run():
         global runPath
         global publishVersion
         global inputDir
+        global zipFolders
         
         addTexturPackerPath()
         runPath = os.path.abspath('.')
@@ -687,6 +897,10 @@ def run():
         #更新项目svn目录
         svnUpdate()
 
+        #压缩配置
+        for pair in zipFolders:
+          #compress_cfg(inputDir+pair[1])
+          compress_cfg2(inputDir+pair[1])
         #发布目录
         publishProject()
                 
@@ -696,20 +910,22 @@ def run():
         #加载md5文件
         loadMd5()
         #压缩需要压缩的文件
-        compressPng()
+        #compressPng()
         #拷贝其他资源文件
         copyResource()
-        
         #make_jsons_to_one(inputDir)
         #make_jsons_to_buffer(inputDir)
         
         #testPackJson()
-        change_coding()
-        
+        #compressJsons()
         #打包配置文件
         #make_jsons_to_Multi_buffer(inputDir)
-        
+        #生成增量更新的resJson
         make_resJson()
+
+        change_coding()
+
+        saveMd5()
         os.system("pause")
 
 			
