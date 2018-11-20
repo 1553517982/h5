@@ -390,9 +390,10 @@ def walkFolder(folder, rlist):
 #load file md5 list
 def loadMd5():
     global runPath
+    global outputDir
     global pre_versionconf
     global pre_md5conf
-    path = runPath + "\\fileMd5"
+    path = outputDir + "..\\fileMd5"
     if not os.path.exists(path):
         return 
     md5file = open(path,"r")
@@ -412,7 +413,7 @@ def saveMd5():
     global runPath
     global pre_md5conf
     global pre_versionconf
-    path = runPath + "\\fileMd5"  
+    path = outputDir + "..\\fileMd5"
     md5file = open(path, 'w+')
     filecontent = ""
     for filePath in pre_md5conf :
@@ -604,16 +605,22 @@ def publishProject():
     global projectPath
     global runPath
     os.chdir(projectPath)
+    os.remove(projectPath+'src/ClassNameConfig.ts')
     os.system("egret publish --version  " + publishVersion)
+    os.system("svn update " + projectPath)
     os.chdir(runPath)
 
 def copyScripts():
     global outputDir
     global publishPath
-    if os.path.exists(outputDir +"..\\js\\"):
-        shutil.rmtree( outputDir +"..\\js\\" )
-        
-    shutil.copytree( publishPath +"\\js\\",outputDir+"..\\js\\")
+    #if os.path.exists(outputDir +"..\\js\\"):
+    #    shutil.rmtree( outputDir +"..\\js\\" )
+    jsInputDir = publishPath +"\\js\\"
+    jsOutPutDir = outputDir +"..\\js\\"
+    for name in os.listdir(jsInputDir):
+        if(os.path.isfile(jsInputDir+name)) and not os.path.exists(jsOutPutDir+name):
+            shutil.copy(jsInputDir + name,jsOutPutDir+name)
+    #shutil.copytree( publishPath +"\\js\\",outputDir+"..\\js\\")
     shutil.copy(publishPath+"\\index.html",outputDir+"..\\index.html")
     shutil.copy(publishPath+"\\manifest.json",outputDir+"..\\manifest.json")
 
@@ -625,7 +632,7 @@ def testPackJson():
 
 def addTexturPackerPath():
     runPath = os.path.abspath('.')
-    os.environ["PATH"] = os.environ["PATH"]+";"+ runPath+'/bin'
+    os.environ["PATH"] = os.environ["PATH"]+";"+ runPath+'/bin'+";"+ runPath
 
 def change_coding():
     global ecodingFolders
@@ -642,6 +649,7 @@ def make_resJson():
     global pre_md5conf
     global resVersion
     global publishVersion
+    global publishPath
     #resource下所有需要打包的文件
     file_path = {}
     for dir in packFolders:
@@ -667,12 +675,17 @@ def make_resJson():
     fileTypeKind["exml"] = "text"
     fileTypeKind["zip"] = "zip"
     fileTypeKind["mif"] = "bin"
+    fileTypeKind["bin"] = "bin"
 
-    print(len(jsonObj["resources"]))
+
+    binKeys=""
+    binKeysPre=""
     for resPath in file_path:
         cfg = {}
         fileName, fileType = os.path.splitext(resPath)
         kind = fileType.replace('.','')
+        if( kind == "exml" or kind == ""):
+          continue
         #print fileName ,kind
         #合图的json需要按照sheet来解析
         newVersion = ""
@@ -684,6 +697,8 @@ def make_resJson():
         #不能用这种方式   只能用文件夹来当版本号
         tmpDirName = os.path.dirname(resPath)
         index = tmpDirName.find('/')
+        if(index < 0):
+            index = tmpDirName.find('\\')
         firstFolder = tmpDirName
         if index >= 0:
           firstFolder = tmpDirName[0:index]
@@ -693,6 +708,9 @@ def make_resJson():
         newName = resPath.replace(os.path.dirname(resPath),versionDir)
         unuse ,fileName = os.path.split(resPath)
         fileName = fileName.replace(fileType,'')
+        fileKey = fileName + "_"+kind
+        isSheet=False
+        sheetName=""
         if( kind == "json"):
             sheetJson = open(inputDir+resPath, 'r')
             sheetJsonObj = json.loads(sheetJson.read())
@@ -700,7 +718,8 @@ def make_resJson():
             if isinstance(sheetJsonObj,dict) and sheetJsonObj.has_key("file") and sheetJsonObj.has_key("frames"):
                 cfg.setdefault("url", newName)
                 cfg.setdefault("type", "sheet")
-
+                isSheet = True
+                sheetName=sheetJsonObj["file"]
                 cfg.setdefault("name", fileName + "_" + kind)
                 subkeys = ""
                 subkeysPre = ""
@@ -721,19 +740,42 @@ def make_resJson():
             cfg.setdefault("url", newName)
             cfg.setdefault("type", fileTypeKind[kind])
             cfg.setdefault("name", fileName + "_"+kind)
+                
         jsonObj["resources"].append(cfg)
+        
         if not os.path.exists(outputDir+versionDir):
             os.makedirs(outputDir+ versionDir)
         if not os.path.exists(outputDir+newName):
             shutil.copy(outputDir + oldName, outputDir + newName)
 
+        if "fnt" == kind:
+            oldPng = oldName.replace(".fnt",".png")
+            newPng = newName.replace(".fnt",".png")
+            shutil.copy(outputDir + oldPng, outputDir + newPng)
+
+        if isSheet:
+            if os.path.exists(outputDir + tmpDirName + "/" + sheetName):
+                os.remove(outputDir + tmpDirName + "/" + sheetName)
+            shutil.copy(inputDir + tmpDirName+"/"+sheetName, outputDir + tmpDirName + "/" + sheetName)
+        #移除bin生成文件
+        if kind == "bin":
+            binKeysPre=binKeys+fileKey  
+            binKeys=binKeysPre+","
+            os.remove(inputDir+resPath)
+
+    binKeys = binKeysPre
+    binGroupCfg={}
+    binGroupCfg.setdefault("name","binConfig")
+    binGroupCfg.setdefault("keys",binKeys)
+    jsonObj["groups"].append(binGroupCfg)
+    
     #先添加配置分组
-    fileContents = json.dumps(jsonObj)
+    fileContents = json.dumps(jsonObj,indent=0,separators=(',', ':'))
     fileContents = fileContents.replace('\\\\', '/')
     fileContents = fileContents.replace(': ', ':')
 
 
-    publishIniPath = runPath + "\\publish.ini"
+    publishIniPath = outputDir + "..\\publish.ini"
     cf = ConfigParser.ConfigParser()
     cf.read(publishIniPath)
     mainVersion = cf.get("version","mainVersion");
@@ -741,9 +783,10 @@ def make_resJson():
     f = open(outputDir+'default.res'+ mainVersion + "." + subVersion + '.json','w+')
     f.write(fileContents)
     f.close()
+    shutil.copy(publishPath+"\\manifest.json",outputDir+"..\\manifest"+ mainVersion + "." + subVersion +".json")
     cf.set("version","subVersion",str(int(subVersion)+1))
     cf.set("version","publishTime",publishVersion)
-    cf.write(open(runPath + "\\publish.ini","wb"))
+    cf.write(open(outputDir + "..\\publish.ini","wb"))
 
 def compressJsons():
     global packFolders
@@ -823,13 +866,33 @@ def compress_cfg(source_dir):
         of.write(countRet+binFileContent)
         of.close()
 
-        zipFileName=filename.replace('.json','.bin')
+        zipFileName=pathfile.replace('.json','.bin')
+        if(os.path.exists(zipFileName)):
+          os.remove(zipFileName)
         zipf = zipfile.ZipFile(zipFileName, 'w',zipfile.ZIP_DEFLATED)
         zipf.write(outPath, nameKey)
         zipf.close()
         
-        os.remove(outPath)        
+        os.remove(outPath)
 
+
+def compress_cfg2(source_dir):
+    global inputDir
+    global outputDir
+
+    for parent, dirnames, filenames in os.walk(source_dir):
+        for filename in filenames:
+            if filename.find('.json') <> -1:
+                pathfile = os.path.join(parent, filename)
+                nameKey = filename.replace('.json', '_json')
+                zipFileName = pathfile.replace('.json', '.bin')
+
+                if (os.path.exists(zipFileName)):
+                    os.remove(zipFileName)
+
+                zipf = zipfile.ZipFile(zipFileName, 'w', zipfile.ZIP_DEFLATED)
+                zipf.write(pathfile, nameKey)
+                zipf.close()
 
 def run():
         global runPath
@@ -850,20 +913,20 @@ def run():
 
         #压缩配置
         for pair in zipFolders:
-          compress_cfg(inputDir+pair[1])
-        
+          #compress_cfg(inputDir+pair[1])
+          compress_cfg2(inputDir+pair[1])
         #发布目录
-        #publishProject()
+        publishProject()
                 
         #拷贝编译脚本
-        #copyScripts()
+        copyScripts()
         
         #加载md5文件
-        #loadMd5()
+        loadMd5()
         #压缩需要压缩的文件
         #compressPng()
         #拷贝其他资源文件
-        #copyResource()
+        copyResource()
         #make_jsons_to_one(inputDir)
         #make_jsons_to_buffer(inputDir)
         
@@ -872,11 +935,11 @@ def run():
         #打包配置文件
         #make_jsons_to_Multi_buffer(inputDir)
         #生成增量更新的resJson
-        #make_resJson()
+        make_resJson()
 
-        #change_coding()
+        change_coding()
 
-        #saveMd5()
+        saveMd5()
         os.system("pause")
 
 			
