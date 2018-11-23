@@ -1,0 +1,187 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>风谷游戏</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="full-screen" content="true" />
+	<meta name="screen-orientation" content="portrait" />
+	<meta name="x5-fullscreen" content="true" />
+	<meta name="360-fullscreen" content="true" />
+	<style>
+        html, body {
+            -ms-touch-action: none;
+            background: #000000;
+            padding: 0;
+            border: 0;
+            margin: 0;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+	<div style="margin: auto;width: 100%;height: 100%;" class="egret-player" data-entry-class="Main" data-orientation="auto" data-scale-mode="fixedWidth" data-frame-rate="30"
+data-content-width="640" data-content-height="1030" data-multi-fingered="2" data-show-fps="false" data-show-log="false" data-show-fps-style="x:0,y:0,size:12,textColor:0xffffff,bgAlpha:0.9">
+</div>
+<script type="text/javascript" src="./md5.js"></script>
+<script>
+	var loadScript = function (list, callback) {
+		var loaded = 0;
+		var loadNext = function () {
+			loadSingleScript(list[loaded], function () {
+				loaded++;
+				if (loaded >= list.length) {
+					callback();
+				}
+				else {
+					loadNext();
+				}
+			})
+		};
+		loadNext();
+	};
+
+	document.addEventListener("visibilitychange", function () {
+		if (document.visibilityState == "visible") {
+			if (window.onResume) {
+				window.onResume();
+			}
+		}
+		if (document.visibilityState == "hidden") {
+			if (window.onPause) {
+				window.onPause();
+			}
+		}
+	})
+
+	var loadSingleScript = function (src, callback) {
+		var s = document.createElement('script');
+		s.async = false;
+		s.src = src;
+		s.addEventListener('load', function () {
+			s.parentNode.removeChild(s);
+			s.removeEventListener('load', arguments.callee, false);
+			callback();
+		}, false);
+		document.body.appendChild(s);
+	};
+
+	//获取url上的参数
+	var getQueryString = function (url, name) {
+		var reg = new RegExp("(^|&){0,}" + name + "=([^&]*)(&|$)", "i");
+		var r = url.match(reg);
+		if (r != null) return unescape(r[2]); return null;
+	}
+
+	window["model"] = "unknow";
+	if (window.devicePixelRatio == 3 && ((screen.height == 812 && screen.width == 375) || screen.height == 896 && screen.width == 414)) {
+		window["model"] = "iPhone X";
+	}
+
+	var queryVersionInfo = function (pf, ch) {
+		var xhr = new XMLHttpRequest();
+		var s = makesign({ pfrom_id: pf, channel: ch })
+		xhr.open('POST', 'https://gm-ahms.fenggugame.cn/apih5/entance' + s, true);
+		xhr.addEventListener("load", function () {
+			var entance = JSON.parse(xhr.response);
+			enterGameWidthVersion(entance.UpdateUrl || "");
+		});
+		xhr.send(null);
+	}
+
+	var enterGameWidthVersion = function (version) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', './manifest' + version + '.json', true);
+		xhr.addEventListener("load", function () {
+			try {
+				var manifest = JSON.parse(xhr.response);
+				var list = manifest.initial.concat(manifest.game);
+				loadScript(list, function () {
+					/**
+					 * {
+					 * "renderMode":, //Engine rendering mode, "canvas" or "webgl"
+					 * "audioType": 0 //Use the audio type, 0: default, 2: web audio, 3: audio
+					 * "antialias": //Whether the anti-aliasing is enabled in WebGL mode, true: on, false: off, defaults to false
+					 * "calculateCanvasScaleFactor": //a function return canvas scale factor
+					 * }
+					 **/
+
+					egret.runEgret({
+						renderMode: "webgl", audioType: 0, calculateCanvasScaleFactor: function (context) {
+							var backingStore = context.backingStorePixelRatio ||
+								context.webkitBackingStorePixelRatio ||
+								context.mozBackingStorePixelRatio ||
+								context.msBackingStorePixelRatio ||
+								context.oBackingStorePixelRatio ||
+								context.backingStorePixelRatio || 1;
+							return (window.devicePixelRatio || 1) / backingStore;
+						}
+					});
+				});
+			}catch(e){
+				enterGameWidthVersion("")
+			}
+		});
+		xhr.send(null);
+	}
+
+	var enterGame = function () {
+		if (window.pfrom_id) {
+			queryVersionInfo(window.pfrom_id, window.channel)
+		} else {
+			enterGameWidthVersion("")
+		}
+	}
+
+	//39sdk
+	var url = window.location.href;
+	var pfrom_id = getQueryString(url, "pfrom_id");
+	var channel = getQueryString(url, "channel");
+	var version = getQueryString(url, "version");
+	window.pfrom_id = pfrom_id
+	window.channel = channel ? channel : "1"
+	window.version = version ? version : "1"
+
+	if (pfrom_id == "102") {
+		window.pfrom_id = "102"
+		window.hasSDK = true
+		var sdkjs = document.createElement('script');
+		sdkjs.async = false;
+		sdkjs.src = "http://cdn.2155.com/jssdk/js/loadsdk.js";
+		sdkjs.addEventListener('load', function () {
+			sdkjs.parentNode.removeChild(sdkjs);
+			var s = document.createElement('script');
+			s.async = false;
+			s.src = "platform_sanjiu.js?v="+ Math.random();
+			s.addEventListener('load', function () {
+				s.parentNode.removeChild(s);
+				s.removeEventListener('load', arguments.callee, false);
+				enterGame();
+			}, false);
+			document.body.appendChild(s);
+		}, false);
+		document.body.appendChild(sdkjs);
+
+	} else if (window.OPEN_DATA && window.OPEN_DATA.jumpurl) {
+		pfrom_id = getQueryString(window.OPEN_DATA.jumpurl, "pfrom_id");
+		window.pfrom_id = pfrom_id;
+		window.hasSDK = true;
+		var s = document.createElement('script');
+		s.async = false;
+		s.src = "./platform_wanba.js?v="+ Math.random();
+		s.addEventListener('load', function () {
+			s.parentNode.removeChild(s);
+			s.removeEventListener('load', arguments.callee, false);
+			enterGame();
+		}, false);
+		document.body.appendChild(s);
+	} else {
+		enterGame();
+	}
+</script>
+</body>
+
+</html>
