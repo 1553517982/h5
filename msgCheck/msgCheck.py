@@ -1,10 +1,9 @@
+#-*- coding:utf-8 -*-
 import ConfigParser
 import sys
 import os
 import urllib2
 import json
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 appId=""
 appSecret=""
@@ -30,12 +29,13 @@ def checkMsgContent(msg):
     res_data = urllib2.urlopen(req)
     res = json.loads(res_data.read())
     if(res["errcode"] != 0):
-        print msg
+        print msg.decode("utf-8").encode("gbk")
 
 def checkWords():
     global appId
     global appSecret
-
+    reload(sys)
+    sys.setdefaultencoding('utf8')
     conf = ConfigParser.ConfigParser()
     conf.read("config.ini")
     appId = conf.get("appConfig","appId")
