@@ -85,7 +85,11 @@ def replaceWords(subStr):
 
 def replaceSubStr(subStr):
         afterText=""
-        if(subStr.find('/')< 0 ):
+        needCheck = True 
+        #protobuff need ignore
+        if(subStr.find('\"')>=0  and subStr.find('\.')>=0 ):
+                needCheck = False
+        if(subStr.find('/')< 0 and needCheck):
                 afterText = replaceWords(subStr)
         else:
                 afterText = subStr
@@ -129,7 +133,7 @@ def replaceFileContent(filePath):
                 aftertext = getReplacedText(text)
                 aftertext=aftertext.replace(' : ',':')
                 aftertext=aftertext.replace(' , ',',')
-                aftertext=aftertext.replace(' ;',';')
+                aftertext=aftertext.replace(' ; ',';')
                 aftertext=aftertext.replace(' (','(')
                 aftertext=aftertext.replace('( ','(')
                 aftertext=aftertext.replace('// ','//')

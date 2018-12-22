@@ -10,10 +10,28 @@
 		"libs/modules/promise/promise.js"
 	],
 	"game": [
+		"bin-debug/entity/Entity.js",
+		"bin-debug/interface/Component.js",
+		"bin-debug/entity/Character.js",
+		"bin-debug/interface/ManagerInterface.js",
+		"bin-debug/interface/entity/Actionable.js",
 		"bin-debug/AssetAdapter.js",
-		"bin-debug/LoadingUI.js",
 		"bin-debug/Main.js",
+		"bin-debug/entity/Fighter.js",
+		"bin-debug/globaldef/GlobalEnum.js",
 		"bin-debug/Platform.js",
-		"bin-debug/ThemeAdapter.js"
+		"bin-debug/ThemeAdapter.js",
+		"bin-debug/LoadingUI.js",
+		"bin-debug/interface/entity/Attributes.js",
+		"bin-debug/interface/event/GameEventSystem.js",
+		"bin-debug/manager/GameStage.js",
+		"bin-debug/manager/GlobalManager.js",
+		"bin-debug/manager/ReportManager.js",
+		"bin-debug/manager/SceneManager.js",
+		"bin-debug/utils/Hyperlink.js",
+		"bin-debug/utils/RelativeLayout.js",
+		"bin-debug/utils/ShakeUtil.js",
+		"bin-debug/utils/UIFactory.js",
+		"bin-debug/utils/Utils.js"
 	]
 }
