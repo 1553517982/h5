@@ -14,6 +14,7 @@ appSecret=""
 accessToken=""
 wordsDict={}
 wordsList=[]
+typeList={}
 
 def getAccessToken():
     global appId
@@ -42,6 +43,12 @@ def checkMsgContent(msg):
 
 
 def findAllWords(filePath):
+    global typeList
+    fileName, fileType = os.path.splitext(filePath)
+    kind = fileType.replace('.','')
+    if not typeList.has_key(kind):
+        return
+    
     f = open(filePath, "r")
     lines = f.readlines()
     f.close()
@@ -74,18 +81,28 @@ def checkWords():
     global appId
     global appSecret
     global wordsList
+    global typeList
     reload(sys)
     sys.setdefaultencoding('utf8')
     conf = ConfigParser.ConfigParser()
     conf.read("config.ini")
     appId = conf.get("appConfig","appId")
     appSecret = conf.get("appConfig", "appSecret")
+    #files need check
+    if (conf.has_section('checkType')):
+        checkTypes = conf.items("checkType")
+        for pairs in checkTypes:
+            if not typeList.has_key(pairs[1]):
+                typeList.setdefault(pairs[1],pairs[1])
 
+    #get all words
     packFolders=[]
     if (conf.has_section('checkDir')):
         checkDirs = conf.items("checkDir")
         for pairs in checkDirs:
             findDirAllWords(pairs[1])
+
+    
 
     print("totalwords:"+ str(len(wordsList)))
     print("load words success!")
