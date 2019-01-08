@@ -23,7 +23,10 @@ def getAccessToken():
     req = urllib2.Request(url)
     res_data = urllib2.urlopen(req)
     res = json.loads(res_data.read())
-    accessToken = res['access_token']
+    if res.has_key('access_token'):
+        accessToken = res['access_token']
+    else:
+        print "get access_token fail,please check appId and appSecret"
 
 def queryQRCode(chanel,param):
     global accessToken
@@ -58,11 +61,11 @@ def mkQRCode():
     codeSize = conf.get("appConfig", "size")
 
     getAccessToken()
-    
-    if (conf.has_section('launchParam')):
-        checkDirs = conf.items("launchParam")
-        for pairs in checkDirs:
-            queryQRCode(pairs[0],pairs[1])
+    if accessToken !="":
+        if (conf.has_section('launchParam')):
+            checkDirs = conf.items("launchParam")
+            for pairs in checkDirs:
+                queryQRCode(pairs[0],pairs[1])
 
 mkQRCode()
 os.system("pause")
