@@ -53,6 +53,7 @@ var GlobalManager = (function (_super) {
                 var manager = new className();
                 this.mgrList.push(manager);
                 this.managerIndexMap[managerName] = (this.mgrList.length - 1);
+                return manager;
             }
             else {
                 console.warn(managerName, "未注册到GlobalManager！");

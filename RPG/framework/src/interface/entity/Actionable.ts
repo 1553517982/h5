@@ -13,5 +13,5 @@ interface Fighteable {
 	/**攻击 */
 	attack(targetHandle: number)
 	/**受击 */
-	underAttack(skillId: number, targetHandle: number)
+	underAttack(skillId: number, sourceHandle: number)
 }

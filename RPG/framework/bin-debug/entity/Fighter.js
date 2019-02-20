@@ -43,7 +43,7 @@ var Fighter = (function (_super) {
     /**受击
      * @todo
     */
-    Fighter.prototype.underAttack = function (skillId, targetHandle) {
+    Fighter.prototype.underAttack = function (skillId, sourceHandle) {
     };
     return Fighter;
 }(Character));

@@ -105,7 +105,7 @@ var Main = (function (_super) {
     };
     Main.prototype.loadGameResource = function (entry) {
         return __awaiter(this, void 0, void 0, function () {
-            var self, stageWidth, stageHeight;
+            var self;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -143,12 +143,6 @@ var Main = (function (_super) {
                         _a.sent();
                         return [2 /*return*/];
                     case 8:
-                        stageWidth = this.stage.stageWidth;
-                        stageHeight = this.stage.stageHeight;
-                        //如果不是16：9则按照showAll适配
-                        if (stageHeight / stageWidth < 16 / 9) {
-                            this.stage.scaleMode = egret.StageScaleMode.SHOW_ALL;
-                        }
                         self.startGame(self);
                         return [2 /*return*/];
                 }
@@ -157,26 +151,17 @@ var Main = (function (_super) {
     };
     Main.prototype.loadResource = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var assetAdapter, self_1;
+            var assetAdapter;
             return __generator(this, function (_a) {
                 try {
                     assetAdapter = new AssetAdapter();
                     egret.registerImplementation("eui.IAssetAdapter", assetAdapter);
                     egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter());
                     //Web模式下加载本地资源
-                    if (egret.Capabilities.runtimeType == egret.RuntimeType.WEB) {
-                        this.loadGameResource({
-                            configName: "resource/default.res.json",
-                            configUrl: "resource/"
-                        });
-                    }
-                    else {
-                        self_1 = this;
-                        ReportManager.queryEntry(function (entry) {
-                            self_1.loadGameResource(entry);
-                            self_1 = null;
-                        });
-                    }
+                    this.loadGameResource({
+                        configName: "resource/default.res.json",
+                        configUrl: "resource/"
+                    });
                 }
                 catch (e) {
                     console.error(e);
@@ -185,9 +170,6 @@ var Main = (function (_super) {
             });
         });
     };
-    //merge test
-    //
-    //
     Main.prototype.loadTheme = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -203,11 +185,7 @@ var Main = (function (_super) {
      * 游戏开始
      */
     Main.prototype.startGame = function (main) {
-        // 游戏的一开始，已经将资源的配置表下载完了
-        // 首先是页游是不需要小退功能的，所以不需要游戏状态控制
-        GameStage.instance.init(this.stage);
-        GameStage.instance.startGame(main);
-        // GameStage.instance.test(main);
+        GameWorld.instance.start();
     };
     return Main;
 }(egret.DisplayObjectContainer));

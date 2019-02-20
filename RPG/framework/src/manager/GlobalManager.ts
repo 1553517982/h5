@@ -42,7 +42,7 @@ class GlobalManager extends Manager {
 	}
 
 	/**获取对应的管理类 */
-	public getManager(managerName: string): Manager {
+	public getManager(managerName: string): any {
 		let managerIndex = this.managerIndexMap[managerName]
 		if (managerIndex != undefined) {
 			return this.mgrList[managerIndex];
@@ -52,6 +52,7 @@ class GlobalManager extends Manager {
 				var manager = new className()
 				this.mgrList.push(manager)
 				this.managerIndexMap[managerName] = (this.mgrList.length - 1);
+				return manager
 			} else {
 				console.warn(managerName, "未注册到GlobalManager！");
 			}

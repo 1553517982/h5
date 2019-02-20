@@ -84,13 +84,6 @@ class Main extends egret.DisplayObjectContainer {
             await self.loadGameResource(entry)
             return
         }
-
-        let stageWidth = this.stage.stageWidth
-        let stageHeight = this.stage.stageHeight
-        //如果不是16：9则按照showAll适配
-        if (stageHeight / stageWidth < 16 / 9) {
-            this.stage.scaleMode = egret.StageScaleMode.SHOW_ALL
-        }
         self.startGame(self)
     }
 
@@ -102,27 +95,15 @@ class Main extends egret.DisplayObjectContainer {
             egret.registerImplementation("eui.IAssetAdapter", assetAdapter);
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter());
             //Web模式下加载本地资源
-            if (egret.Capabilities.runtimeType == egret.RuntimeType.WEB) {
-                this.loadGameResource({
-                    configName: "resource/default.res.json",
-                    configUrl: "resource/"
-                })
-            } else {
-                let self = this
-                ReportManager.queryEntry(function (entry) {
-                    self.loadGameResource(entry)
-                    self = null;
-                })
-            }
+            this.loadGameResource({
+                configName: "resource/default.res.json",
+                configUrl: "resource/"
+            })
         }
         catch (e) {
             console.error(e);
         }
     }
-
-    //merge test
-    //
-    //
 
     private loadTheme() {
         return new Promise((resolve, reject) => {
@@ -140,10 +121,6 @@ class Main extends egret.DisplayObjectContainer {
      * 游戏开始
      */
     private startGame(main: Main): void {
-        // 游戏的一开始，已经将资源的配置表下载完了
-        // 首先是页游是不需要小退功能的，所以不需要游戏状态控制
-        GameStage.instance.init(this.stage);
-        GameStage.instance.startGame(main);
-        // GameStage.instance.test(main);
+        GameWorld.instance.start(this.stage)
     }
 }

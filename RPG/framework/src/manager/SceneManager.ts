@@ -1,4 +1,0 @@
-class SceneManager {
-	public constructor() {
-	}
-}

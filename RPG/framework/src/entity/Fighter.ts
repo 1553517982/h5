@@ -38,7 +38,7 @@ class Fighter extends Character implements Fighteable {
 	/**受击 
 	 * @todo
 	*/
-	public underAttack(skillId: number, targetHandle: number) {
+	public underAttack(skillId: number, sourceHandle: number) {
 
 	}
 
