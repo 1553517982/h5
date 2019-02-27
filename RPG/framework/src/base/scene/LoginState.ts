@@ -2,7 +2,7 @@
 class LoginState implements GameState {
 	public onEnter() {
 		console.log("进入登录状态")
-		UIManager.instance.showWindow("LoginView")
+		GameWorld.instance.switchScene(GameStateDef.Login)
 	}
 
 	public onExit() {

@@ -3,11 +3,12 @@ class GameWorld extends egret.DisplayObjectContainer {
 	private static _instance: GameWorld;
 	//全局manager管理类
 	private globalMgr: GlobalManager;
-
+	//场景容器 
+	private _sceneArray: {}
 	//场景根节点
 	private _sceneRootLayer: egret.DisplayObjectContainer;
 	//实体根节点
-	private _entityRootLayer: egret.DisplayObjectContainer;
+	//private _entityRootLayer: egret.DisplayObjectContainer;
 	//UI根节点
 	private _uiRootLayer: egret.DisplayObjectContainer;
 
@@ -30,19 +31,45 @@ class GameWorld extends egret.DisplayObjectContainer {
 		gameStateMgr.setState(GameStateDef.Login)
 	}
 
+	/**
+	 * 切换场景容器
+	 */
+	public switchScene(gameState: GameStateDef) {
+		let scene = this._sceneArray[gameState]
+		if (scene) {
+			let zOrder = 0;
+			for (var k in this._sceneArray) {
+				if (Number(k) != gameState) {
+					this._sceneRootLayer.setChildIndex(scene, zOrder)
+				}
+				zOrder++
+			}
+			this._sceneRootLayer.setChildIndex(scene, zOrder)
+
+		}
+	}
+
+	private addScene(sceneDef: GameStateDef, scene: Scene) {
+		this._sceneRootLayer.addChild(scene)
+		this._sceneArray[sceneDef] = scene
+	}
+
 	/**初始化层级组件 */
 	private initLayer(stage: egret.Stage) {
-		
+
+		//场景处于游戏最底层
 		this._sceneRootLayer = new egret.DisplayObjectContainer()
 		this._sceneRootLayer.width = stage.width
 		this._sceneRootLayer.height = stage.height
 		stage.addChild(this._sceneRootLayer)
 
-		this._entityRootLayer = new egret.DisplayObjectContainer()
-		this._sceneRootLayer.width = stage.width
-		this._sceneRootLayer.height = stage.height
-		stage.addChild(this._entityRootLayer)
-
+		//游戏场景
+		this.addScene(GameStateDef.Gaming, new GameScene())
+		//登录场景
+		this.addScene(GameStateDef.Login, new LoginScene())
+		//加载场景
+		this.addScene(GameStateDef.Loading, new LoadingScene())
+		//UI处于游戏最上层
 		this._uiRootLayer = new egret.DisplayObjectContainer()
 		this._sceneRootLayer.width = stage.width
 		this._sceneRootLayer.height = stage.height

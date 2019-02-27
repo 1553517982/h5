@@ -35,9 +35,6 @@ class Main extends egret.DisplayObjectContainer {
 
     public constructor() {
         super();
-
-        this.loadResJsonFail = true;
-        this.loadThemeJsonFail = true;
         egret.ImageLoader.crossOrigin = "anonymous";
         this.addEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
     }
@@ -58,35 +55,6 @@ class Main extends egret.DisplayObjectContainer {
         await this.loadResource()
     }
 
-    private async loadGameResource(entry: any) {
-        let self = this;
-        if (self.loadResJsonFail) {
-            self.loadResJsonFail = false;
-            await RES.loadConfig(entry.configName, entry.configUrl).catch(e => {
-                //入口文件加载失败 重试
-                console.log("资源配置表加载失败")
-                self.loadResJsonFail = true;
-            })
-        }
-        if (self.loadResJsonFail) {
-            await self.loadGameResource(entry)
-            return
-        }
-
-        if (self.loadThemeJsonFail) {
-            self.loadThemeJsonFail = false;
-            await self.loadTheme().catch(e => {
-                self.loadThemeJsonFail = true;
-                console.log("皮肤表加载失败")
-            })
-        }
-        if (self.loadThemeJsonFail) {
-            await self.loadGameResource(entry)
-            return
-        }
-        self.startGame(self)
-    }
-
     private async loadResource() {
         try {
             //inject the custom material parser
@@ -94,11 +62,11 @@ class Main extends egret.DisplayObjectContainer {
             let assetAdapter = new AssetAdapter();
             egret.registerImplementation("eui.IAssetAdapter", assetAdapter);
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter());
-            //Web模式下加载本地资源
-            this.loadGameResource({
-                configName: "resource/default.res.json",
-                configUrl: "resource/"
-            })
+            //初始化资源映射
+            await RES.loadConfig("resource/default.res.json", "resource/")
+            //初始化皮肤配置
+            await this.loadTheme()
+            this.startGame(this)
         }
         catch (e) {
             console.error(e);
