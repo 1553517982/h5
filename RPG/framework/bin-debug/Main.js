@@ -75,8 +75,6 @@ var Main = (function (_super) {
     __extends(Main, _super);
     function Main() {
         var _this = _super.call(this) || this;
-        _this.loadResJsonFail = true;
-        _this.loadThemeJsonFail = true;
         egret.ImageLoader.crossOrigin = "anonymous";
         _this.addEventListener(egret.Event.ADDED_TO_STAGE, _this.onAddToStage, _this);
         return _this;
@@ -93,80 +91,45 @@ var Main = (function (_super) {
     };
     Main.prototype.runGame = function () {
         return __awaiter(this, void 0, void 0, function () {
+            var a;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.loadResource()];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    Main.prototype.loadGameResource = function (entry) {
-        return __awaiter(this, void 0, void 0, function () {
-            var self;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        self = this;
-                        if (!self.loadResJsonFail) return [3 /*break*/, 2];
-                        self.loadResJsonFail = false;
-                        return [4 /*yield*/, RES.loadConfig(entry.configName, entry.configUrl).catch(function (e) {
-                                //入口文件加载失败 重试
-                                console.log("资源配置表加载失败");
-                                self.loadResJsonFail = true;
-                            })];
-                    case 1:
-                        _a.sent();
-                        _a.label = 2;
-                    case 2:
-                        if (!self.loadResJsonFail) return [3 /*break*/, 4];
-                        return [4 /*yield*/, self.loadGameResource(entry)];
-                    case 3:
-                        _a.sent();
-                        return [2 /*return*/];
-                    case 4:
-                        if (!self.loadThemeJsonFail) return [3 /*break*/, 6];
-                        self.loadThemeJsonFail = false;
-                        return [4 /*yield*/, self.loadTheme().catch(function (e) {
-                                self.loadThemeJsonFail = true;
-                                console.log("皮肤表加载失败");
-                            })];
-                    case 5:
-                        _a.sent();
-                        _a.label = 6;
-                    case 6:
-                        if (!self.loadThemeJsonFail) return [3 /*break*/, 8];
-                        return [4 /*yield*/, self.loadGameResource(entry)];
-                    case 7:
-                        _a.sent();
-                        return [2 /*return*/];
-                    case 8:
-                        self.startGame(self);
-                        return [2 /*return*/];
-                }
+                a = [66, 5, 2, 3, 6, 4, 8, 7, 9, 10, 22, 35];
+                mergeSort(a, 0, a.length - 1);
+                console.log(a);
+                return [2 /*return*/];
             });
         });
     };
     Main.prototype.loadResource = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var assetAdapter;
+            var assetAdapter, e_1;
             return __generator(this, function (_a) {
-                try {
-                    assetAdapter = new AssetAdapter();
-                    egret.registerImplementation("eui.IAssetAdapter", assetAdapter);
-                    egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter());
-                    //Web模式下加载本地资源
-                    this.loadGameResource({
-                        configName: "resource/default.res.json",
-                        configUrl: "resource/"
-                    });
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        assetAdapter = new AssetAdapter();
+                        egret.registerImplementation("eui.IAssetAdapter", assetAdapter);
+                        egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter());
+                        //初始化资源映射
+                        return [4 /*yield*/, RES.loadConfig("resource/default.res.json", "resource/")
+                            //初始化皮肤配置
+                        ];
+                    case 1:
+                        //初始化资源映射
+                        _a.sent();
+                        //初始化皮肤配置
+                        return [4 /*yield*/, this.loadTheme()];
+                    case 2:
+                        //初始化皮肤配置
+                        _a.sent();
+                        this.startGame(this);
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        console.error(e_1);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
-                catch (e) {
-                    console.error(e);
-                }
-                return [2 /*return*/];
             });
         });
     };
@@ -185,7 +148,7 @@ var Main = (function (_super) {
      * 游戏开始
      */
     Main.prototype.startGame = function (main) {
-        GameWorld.instance.start();
+        GameWorld.instance.start(this.stage);
     };
     return Main;
 }(egret.DisplayObjectContainer));

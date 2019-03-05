@@ -49,6 +49,10 @@ class GameWorld extends egret.DisplayObjectContainer {
 		}
 	}
 
+	public getScene(gameState: GameStateDef): Scene {
+		return this._sceneArray[gameState]
+	}
+
 	private addScene(sceneDef: GameStateDef, scene: Scene) {
 		this._sceneRootLayer.addChild(scene)
 		this._sceneArray[sceneDef] = scene

@@ -1,24 +1,22 @@
 // TypeScript file
-let a = [66, 5, 2, 3, 6, 4, 8, 7, 9, 10, 22, 35]
-
 function merge(array, from, midel, end) {
     let arrayLeft = []
     let arrayRight = []
     for (var i = from; i <= midel; i++) {
         arrayLeft.push(array[i])
     }
-    arrayLeft.push(-1)
+    //arrayLeft.push(-1)
     for (var i = midel + 1; i <= end; i++) {
         arrayRight.push(array[i])
     }
-    arrayRight.push(-1)
+    //arrayRight.push(-1)
     let l = 0;
     let r = 0;
     for (var k = from; k <= end; k++) {
-        if (arrayLeft[l] > arrayRight[r]) {
+        if (l < arrayLeft.length && (arrayLeft[l] < arrayRight[r] || r == arrayRight.length)) {
             array[k] = arrayLeft[l]
             l++
-        } else {
+        } else if (r < arrayRight.length || l == arrayLeft.length) {
             array[k] = arrayRight[r]
             r++
         }
@@ -33,5 +31,3 @@ function mergeSort(array, start, end) {
         merge(array, start, middle, end)
     }
 }
-mergeSort(a, 0, a.length - 1)
-console.log(a)

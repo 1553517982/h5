@@ -17,6 +17,8 @@ var UIManager = (function () {
         enumerable: true,
         configurable: true
     });
+    UIManager.prototype.showWindow = function (viewName, callback) {
+    };
     return UIManager;
 }());
 __reflect(UIManager.prototype, "UIManager");

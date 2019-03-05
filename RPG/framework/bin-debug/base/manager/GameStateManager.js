@@ -21,29 +21,6 @@ var GameStateDef;
     //游戏中
     GameStateDef[GameStateDef["Gaming"] = 2] = "Gaming";
 })(GameStateDef || (GameStateDef = {}));
-//登录状态
-var LoginState = (function () {
-    function LoginState() {
-    }
-    LoginState.prototype.onEnter = function () {
-        console.log("进入登录状态");
-    };
-    LoginState.prototype.onExit = function () {
-    };
-    return LoginState;
-}());
-__reflect(LoginState.prototype, "LoginState", ["GameState"]);
-//游戏状态
-var GamingState = (function () {
-    function GamingState() {
-    }
-    GamingState.prototype.onEnter = function () {
-    };
-    GamingState.prototype.onExit = function () {
-    };
-    return GamingState;
-}());
-__reflect(GamingState.prototype, "GamingState", ["GameState"]);
 var GameStateManager = (function (_super) {
     __extends(GameStateManager, _super);
     function GameStateManager() {

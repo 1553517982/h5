@@ -52,7 +52,11 @@ class Main extends egret.DisplayObjectContainer {
     }
 
     private async runGame() {
-        await this.loadResource()
+        //await this.loadResource()
+
+        let a = [66, 5, 2, 3, 6, 4, 8, 7, 9, 10, 22, 35]
+        mergeSort(a, 0, a.length - 1)
+        console.log(a)
     }
 
     private async loadResource() {
