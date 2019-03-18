@@ -27,12 +27,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
-class Main extends egret.DisplayObjectContainer {
-
-    private loadResJsonFail: boolean;
-
-    private loadThemeJsonFail: boolean;
-
+class Main extends BaseContainer {
     public constructor() {
         super();
         egret.ImageLoader.crossOrigin = "anonymous";
@@ -52,11 +47,7 @@ class Main extends egret.DisplayObjectContainer {
     }
 
     private async runGame() {
-        //await this.loadResource()
-
-        let a = [66, 5, 2, 3, 6, 4, 8, 7, 9, 10, 22, 35]
-        mergeSort(a, 0, a.length - 1)
-        console.log(a)
+        await this.loadResource()
     }
 
     private async loadResource() {

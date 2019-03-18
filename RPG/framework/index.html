@@ -24,7 +24,7 @@
 
 <body>
 	<div style="margin: auto;width: 100%;height: 100%;" class="egret-player" data-entry-class="Main" data-orientation="auto" data-scale-mode="fixedWidth" data-frame-rate="30"
-data-content-width="640" data-content-height="1030" data-multi-fingered="2" data-show-fps="false" data-show-log="false" data-show-fps-style="x:0,y:0,size:12,textColor:0xffffff,bgAlpha:0.9">
+data-content-width="640" data-content-height="1030" data-multi-fingered="2" data-show-fps="true" data-show-log="false" data-show-fps-style="x:0,y:0,size:12,textColor:0xffffff,bgAlpha:0.9">
 </div>
 <script type="text/javascript" src="./md5.js"></script>
 <script>
@@ -74,11 +74,6 @@ data-content-width="640" data-content-height="1030" data-multi-fingered="2" data
 		var reg = new RegExp("(^|&){0,}" + name + "=([^&]*)(&|$)", "i");
 		var r = url.match(reg);
 		if (r != null) return unescape(r[2]); return null;
-	}
-
-	window["model"] = "unknow";
-	if (window.devicePixelRatio == 3 && ((screen.height == 812 && screen.width == 375) || screen.height == 896 && screen.width == 414)) {
-		window["model"] = "iPhone X";
 	}
 
 	var queryVersionInfo = function (pf, ch) {
@@ -136,51 +131,7 @@ data-content-width="640" data-content-height="1030" data-multi-fingered="2" data
 		}
 	}
 
-	//39sdk
-	var url = window.location.href;
-	var pfrom_id = getQueryString(url, "pfrom_id");
-	var channel = getQueryString(url, "channel");
-	var version = getQueryString(url, "version");
-	window.pfrom_id = pfrom_id
-	window.channel = channel ? channel : "1"
-	window.version = version ? version : "1"
-
-	if (pfrom_id == "102") {
-		window.pfrom_id = "102"
-		window.hasSDK = true
-		var sdkjs = document.createElement('script');
-		sdkjs.async = false;
-		sdkjs.src = "http://cdn.2155.com/jssdk/js/loadsdk.js";
-		sdkjs.addEventListener('load', function () {
-			sdkjs.parentNode.removeChild(sdkjs);
-			var s = document.createElement('script');
-			s.async = false;
-			s.src = "platform_sanjiu.js?v="+ Math.random();
-			s.addEventListener('load', function () {
-				s.parentNode.removeChild(s);
-				s.removeEventListener('load', arguments.callee, false);
-				enterGame();
-			}, false);
-			document.body.appendChild(s);
-		}, false);
-		document.body.appendChild(sdkjs);
-
-	} else if (window.OPEN_DATA && window.OPEN_DATA.jumpurl) {
-		pfrom_id = getQueryString(window.OPEN_DATA.jumpurl, "pfrom_id");
-		window.pfrom_id = pfrom_id;
-		window.hasSDK = true;
-		var s = document.createElement('script');
-		s.async = false;
-		s.src = "./platform_wanba.js?v="+ Math.random();
-		s.addEventListener('load', function () {
-			s.parentNode.removeChild(s);
-			s.removeEventListener('load', arguments.callee, false);
-			enterGame();
-		}, false);
-		document.body.appendChild(s);
-	} else {
-		enterGame();
-	}
+	enterGame();
 </script>
 </body>
 

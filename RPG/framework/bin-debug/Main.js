@@ -91,12 +91,13 @@ var Main = (function (_super) {
     };
     Main.prototype.runGame = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var a;
             return __generator(this, function (_a) {
-                a = [66, 5, 2, 3, 6, 4, 8, 7, 9, 10, 22, 35];
-                mergeSort(a, 0, a.length - 1);
-                console.log(a);
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.loadResource()];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
             });
         });
     };
@@ -151,6 +152,6 @@ var Main = (function (_super) {
         GameWorld.instance.start(this.stage);
     };
     return Main;
-}(egret.DisplayObjectContainer));
+}(BaseContainer));
 __reflect(Main.prototype, "Main");
 //# sourceMappingURL=Main.js.map

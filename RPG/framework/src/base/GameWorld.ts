@@ -1,20 +1,14 @@
-class GameWorld extends egret.DisplayObjectContainer {
+class GameWorld {
 	//游戏世界单例
 	private static _instance: GameWorld;
-	//全局manager管理类
-	private globalMgr: GlobalManager;
-	//场景容器 
-	private _sceneArray: {}
-	//场景根节点
-	private _sceneRootLayer: egret.DisplayObjectContainer;
-	//实体根节点
-	//private _entityRootLayer: egret.DisplayObjectContainer;
-	//UI根节点
-	private _uiRootLayer: egret.DisplayObjectContainer;
+	//记录上一个游戏状态
+	private _preGameState: GameStateDef
+	//场景容器
+	private _sceneRootLayer: BaseContainer;
+	private _sceneObjMap: any
 
 	public constructor() {
-		super()
-		this.globalMgr = GlobalManager.instance
+		this._sceneObjMap = {}
 	}
 
 	public static get instance(): GameWorld {
@@ -25,64 +19,71 @@ class GameWorld extends egret.DisplayObjectContainer {
 	}
 	//开始游戏
 	public start(stage: egret.Stage) {
+		/**初始化游戏层级 */
 		this.initLayer(stage)
-		this.registManagers()
-		let gameStateMgr = this.globalMgr.getManager("GameStateManager") as GameStateManager
-		gameStateMgr.setState(GameStateDef.Login)
+		/**设置游戏状态为登录 */
+		App.GSManager.setState(GameStateDef.Login)
 	}
 
 	/**
 	 * 切换场景容器
 	 */
 	public switchScene(gameState: GameStateDef) {
-		let scene = this._sceneArray[gameState]
+		if (this._preGameState && this._preGameState != gameState) {
+			let preScene = this.getScene(gameState)
+			if (preScene) {
+				preScene.onExit()
+			}
+		}
+
+		let scene = this.getScene(gameState)
 		if (scene) {
 			let zOrder = 0;
-			for (var k in this._sceneArray) {
+			for (var k in this._sceneObjMap) {
 				if (Number(k) != gameState) {
 					this._sceneRootLayer.setChildIndex(scene, zOrder)
 				}
 				zOrder++
 			}
 			this._sceneRootLayer.setChildIndex(scene, zOrder)
-
+			scene.onEnter()
 		}
 	}
 
+	/**获取场景 */
 	public getScene(gameState: GameStateDef): Scene {
-		return this._sceneArray[gameState]
+		if (!this._sceneObjMap[gameState]) {
+			if (gameState == GameStateDef.Gaming) {
+				//游戏场景
+				this.addScene(GameStateDef.Gaming, new GameScene())
+			}
+			else if (gameState == GameStateDef.Login) {
+				//登录场景
+				this.addScene(GameStateDef.Login, new LoginScene())
+			}
+			else if (gameState == GameStateDef.Loading) {
+				//加载场景
+				this.addScene(GameStateDef.Loading, new LoadingScene())
+			}
+		}
+		return this._sceneObjMap[gameState]
 	}
 
 	private addScene(sceneDef: GameStateDef, scene: Scene) {
+		scene.width = this._sceneRootLayer.width
+		scene.height = this._sceneRootLayer.height
 		this._sceneRootLayer.addChild(scene)
-		this._sceneArray[sceneDef] = scene
+		this._sceneObjMap[sceneDef] = scene
 	}
 
 	/**初始化层级组件 */
 	private initLayer(stage: egret.Stage) {
-
-		//场景处于游戏最底层
-		this._sceneRootLayer = new egret.DisplayObjectContainer()
+		/**游戏场景 */
+		this._sceneRootLayer = new BaseContainer()
 		this._sceneRootLayer.width = stage.width
 		this._sceneRootLayer.height = stage.height
 		stage.addChild(this._sceneRootLayer)
-
-		//游戏场景
-		this.addScene(GameStateDef.Gaming, new GameScene())
-		//登录场景
-		this.addScene(GameStateDef.Login, new LoginScene())
-		//加载场景
-		this.addScene(GameStateDef.Loading, new LoadingScene())
-		//UI处于游戏最上层
-		this._uiRootLayer = new egret.DisplayObjectContainer()
-		this._sceneRootLayer.width = stage.width
-		this._sceneRootLayer.height = stage.height
-		stage.addChild(this._uiRootLayer)
-	}
-
-	//注册游戏管理类
-	private registManagers() {
-		//注册游戏状态管理类
-		this.globalMgr.regist("GameStateManager", GameStateManager)
+		/**UI容器 */
+		App.UIManager.init(stage)
 	}
 }
