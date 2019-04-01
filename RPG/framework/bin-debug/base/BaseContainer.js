@@ -19,4 +19,3 @@ var BaseContainer = (function (_super) {
     return BaseContainer;
 }(egret.DisplayObjectContainer));
 __reflect(BaseContainer.prototype, "BaseContainer");
-//# sourceMappingURL=BaseContainer.js.map

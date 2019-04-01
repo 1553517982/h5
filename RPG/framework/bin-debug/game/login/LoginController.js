@@ -16,6 +16,7 @@ var LoginController = (function (_super) {
     //绑定事件 全部写在这里
     LoginController.prototype.onCreate = function () {
         this.bindGameEvent(GameEvent.E_ACCOUNT_LOGIN, this.onLoginSuccess, this);
+        this.bindGameEvent(GameEvent.E_ENTER_SERVER, this.onEnterServerSuccess, this);
     };
     /**点击登陆按钮 */
     LoginController.prototype.onLogin = function (account, password) {
@@ -23,6 +24,17 @@ var LoginController = (function (_super) {
          * @todo 后台通信 获取游戏内帐号信息
          */
         LoginManager.instance.onLoginSuccess(account, password);
+    };
+    /**
+     * 进入服务器
+     */
+    LoginController.prototype.onEnterServer = function (serverId) {
+        LoginManager.instance.onEnterServerSuccess(serverId);
+    };
+    /**进入服务器成功 */
+    LoginController.prototype.onEnterServerSuccess = function (serverId) {
+        this.view.onEnterServerSuccess(serverId);
+        App.GSManager.setState(GameStateDef.Gaming);
     };
     /**处理登陆回调 */
     LoginController.prototype.onLoginSuccess = function (response) {
@@ -40,4 +52,3 @@ var LoginController = (function (_super) {
     return LoginController;
 }(ViewController));
 __reflect(LoginController.prototype, "LoginController");
-//# sourceMappingURL=LoginController.js.map

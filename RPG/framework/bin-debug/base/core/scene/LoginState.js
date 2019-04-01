@@ -15,4 +15,3 @@ var LoginState = (function () {
     return LoginState;
 }());
 __reflect(LoginState.prototype, "LoginState", ["GameState"]);
-//# sourceMappingURL=LoginState.js.map

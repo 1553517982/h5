@@ -84,4 +84,3 @@ var ViewController = (function () {
     return ViewController;
 }());
 __reflect(ViewController.prototype, "ViewController");
-//# sourceMappingURL=ViewController.js.map

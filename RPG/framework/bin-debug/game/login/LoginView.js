@@ -20,16 +20,28 @@ var LoginView = (function (_super) {
     };
     /**点击登录按钮 */
     LoginView.prototype.onLogin = function () {
-        var account = this.editext_account.text;
-        var password = this.editext_password.text;
-        this.controller.onLogin(account, password);
+        if (!this.bLoginSuccess) {
+            var account = this.editext_account.text;
+            var password = this.editext_password.text;
+            this.controller.onLogin(account, password);
+        }
+        else {
+            /**
+             * @todo 这里是玩家选择的服务器id
+             */
+            this.selectedServerId = "1";
+            this.controller.onEnterServer(this.selectedServerId);
+        }
     };
     /**登录成功回调 */
     LoginView.prototype.onLoginSuccess = function (response) {
         console.log(response);
+        this.bLoginSuccess = true;
+    };
+    /**进入游戏服 */
+    LoginView.prototype.onEnterServerSuccess = function () {
         this.close();
     };
     return LoginView;
 }(BaseUI));
 __reflect(LoginView.prototype, "LoginView");
-//# sourceMappingURL=LoginView.js.map

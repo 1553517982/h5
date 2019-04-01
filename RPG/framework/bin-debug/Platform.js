@@ -56,4 +56,3 @@ var DebugPlatform = (function () {
     return DebugPlatform;
 }());
 __reflect(DebugPlatform.prototype, "DebugPlatform", ["Platform"]);
-//# sourceMappingURL=Platform.js.map

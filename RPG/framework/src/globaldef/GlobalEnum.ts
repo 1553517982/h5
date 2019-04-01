@@ -15,7 +15,8 @@ function generateId(): number {
 /**游戏内事件 */
 enum GameEvent {
 	default, //
-	E_ACCOUNT_LOGIN
+	E_ACCOUNT_LOGIN,//帐号登录成功
+	E_ENTER_SERVER,//进入服务器成功
 
 }
 

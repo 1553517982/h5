@@ -41,4 +41,3 @@ var Algo = (function () {
     return Algo;
 }());
 __reflect(Algo.prototype, "Algo");
-//# sourceMappingURL=Algo.js.map

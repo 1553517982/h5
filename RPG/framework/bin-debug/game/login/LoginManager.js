@@ -41,7 +41,12 @@ var LoginManager = (function (_super) {
         };
         GameEventSystem.instance.dispatch(GameEvent.E_ACCOUNT_LOGIN, response);
     };
+    /**
+     * 进入服务器成功
+     */
+    LoginManager.prototype.onEnterServerSuccess = function (serverid) {
+        GameEventSystem.instance.dispatch(GameEvent.E_ENTER_SERVER, serverid);
+    };
     return LoginManager;
 }(Manager));
 __reflect(LoginManager.prototype, "LoginManager");
-//# sourceMappingURL=LoginManager.js.map

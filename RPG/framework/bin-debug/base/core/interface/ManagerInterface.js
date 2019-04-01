@@ -25,4 +25,3 @@ var Manager = (function (_super) {
     return Manager;
 }(GameComponent));
 __reflect(Manager.prototype, "Manager", ["ManagerInterface"]);
-//# sourceMappingURL=ManagerInterface.js.map

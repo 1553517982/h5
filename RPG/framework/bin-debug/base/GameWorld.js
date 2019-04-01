@@ -82,4 +82,3 @@ var GameWorld = (function () {
     return GameWorld;
 }());
 __reflect(GameWorld.prototype, "GameWorld");
-//# sourceMappingURL=GameWorld.js.map

@@ -48,4 +48,3 @@ var Fighter = (function (_super) {
     return Fighter;
 }(Character));
 __reflect(Fighter.prototype, "Fighter", ["Fighteable"]);
-//# sourceMappingURL=Fighter.js.map

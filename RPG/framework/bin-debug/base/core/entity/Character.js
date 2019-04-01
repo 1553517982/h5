@@ -28,4 +28,3 @@ var Character = (function (_super) {
     return Character;
 }(Entity));
 __reflect(Character.prototype, "Character", ["Moveable"]);
-//# sourceMappingURL=Character.js.map

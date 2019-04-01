@@ -22,4 +22,3 @@ var GamingState = (function () {
     return GamingState;
 }());
 __reflect(GamingState.prototype, "GamingState", ["GameState"]);
-//# sourceMappingURL=GamingState.js.map

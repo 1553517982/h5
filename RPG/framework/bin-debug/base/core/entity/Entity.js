@@ -40,4 +40,3 @@ var Entity = (function (_super) {
     return Entity;
 }(BaseContainer));
 __reflect(Entity.prototype, "Entity", ["Componentable", "AttributesInterface"]);
-//# sourceMappingURL=Entity.js.map

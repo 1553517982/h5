@@ -80,4 +80,3 @@ var GameStateManager = (function (_super) {
     return GameStateManager;
 }(Manager));
 __reflect(GameStateManager.prototype, "GameStateManager");
-//# sourceMappingURL=GameStateManager.js.map

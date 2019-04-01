@@ -167,4 +167,3 @@ var GameEventSystem = (function () {
     return GameEventSystem;
 }());
 __reflect(GameEventSystem.prototype, "GameEventSystem");
-//# sourceMappingURL=GameEventSystem.js.map
