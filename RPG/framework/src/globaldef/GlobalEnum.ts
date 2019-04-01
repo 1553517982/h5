@@ -14,7 +14,9 @@ function generateId(): number {
 
 /**游戏内事件 */
 enum GameEvent {
-	default //
+	default, //
+	E_ACCOUNT_LOGIN
+
 }
 
 

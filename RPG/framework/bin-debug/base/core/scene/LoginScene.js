@@ -24,6 +24,7 @@ var LoginScene = (function (_super) {
     };
     LoginScene.prototype.onExit = function () {
         _super.prototype.onExit.call(this);
+        App.UIManager.hideUI("LoginView");
     };
     return LoginScene;
 }(Scene));

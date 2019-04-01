@@ -1,4 +1,4 @@
 var UIConfig = {
-    "LoginView": { skinName: "resource/UI/Login/LoginViewSkin.exml" }
+    "LoginView": { skinName: "resource/UI/Login/LoginViewSkin.exml", destroy: true }
 };
 //# sourceMappingURL=UIConfig.js.map

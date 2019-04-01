@@ -112,10 +112,15 @@ class GameEventSystem {
 		var objArray = this.$eventHandles[eventId];
 		if (objArray && objArray.length > 0) {
 			var i: number
+			var eventObjId
 			var eventObj: GameEventObject;
 			for (i = 0; i < objArray.length; i++) {
 				eventObj = objArray[i];
-				eventObj.resume();
+				eventObjId = objArray[i];
+				eventObj = this.$eventObjList[eventObjId]
+				if (eventObj) {
+					eventObj.resume();
+				}
 			}
 		}
 	}
@@ -125,10 +130,14 @@ class GameEventSystem {
 		var objArray = this.$eventHandles[eventId];
 		if (objArray && objArray.length > 0) {
 			var i: number
+			var eventObjId
 			var eventObj: GameEventObject;
 			for (i = 0; i < objArray.length; i++) {
-				eventObj = objArray[i];
-				eventObj.pause();
+				eventObjId = objArray[i];
+				eventObj = this.$eventObjList[eventObjId]
+				if (eventObj) {
+					eventObj.pause();
+				}
 			}
 		}
 	}
@@ -150,8 +159,10 @@ class GameEventSystem {
 		if (eventHandleList && eventHandleList.length > 0) {
 			var i: number
 			var eventObj: GameEventObject;
+			var eventObjId;
 			for (i = 0; i < eventHandleList.length; i++) {
-				eventObj = eventHandleList[i];
+				eventObjId = eventHandleList[i];
+				eventObj = this.$eventObjList[eventObjId]
 				if (eventObj) {
 					eventObj.trigger(...params);
 				}

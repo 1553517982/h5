@@ -17,5 +17,6 @@ class LoginScene extends Scene {
 
 	public onExit() {
 		super.onExit()
+		App.UIManager.hideUI("LoginView")
 	}
 }

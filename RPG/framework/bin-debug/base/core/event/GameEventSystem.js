@@ -106,10 +106,15 @@ var GameEventSystem = (function () {
         var objArray = this.$eventHandles[eventId];
         if (objArray && objArray.length > 0) {
             var i;
+            var eventObjId;
             var eventObj;
             for (i = 0; i < objArray.length; i++) {
                 eventObj = objArray[i];
-                eventObj.resume();
+                eventObjId = objArray[i];
+                eventObj = this.$eventObjList[eventObjId];
+                if (eventObj) {
+                    eventObj.resume();
+                }
             }
         }
     };
@@ -118,10 +123,14 @@ var GameEventSystem = (function () {
         var objArray = this.$eventHandles[eventId];
         if (objArray && objArray.length > 0) {
             var i;
+            var eventObjId;
             var eventObj;
             for (i = 0; i < objArray.length; i++) {
-                eventObj = objArray[i];
-                eventObj.pause();
+                eventObjId = objArray[i];
+                eventObj = this.$eventObjList[eventObjId];
+                if (eventObj) {
+                    eventObj.pause();
+                }
             }
         }
     };
@@ -145,8 +154,10 @@ var GameEventSystem = (function () {
         if (eventHandleList && eventHandleList.length > 0) {
             var i;
             var eventObj;
+            var eventObjId;
             for (i = 0; i < eventHandleList.length; i++) {
-                eventObj = eventHandleList[i];
+                eventObjId = eventHandleList[i];
+                eventObj = this.$eventObjList[eventObjId];
                 if (eventObj) {
                     eventObj.trigger.apply(eventObj, params);
                 }

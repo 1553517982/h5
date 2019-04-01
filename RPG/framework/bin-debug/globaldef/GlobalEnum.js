@@ -8,7 +8,8 @@ function generateId() {
 /**游戏内事件 */
 var GameEvent;
 (function (GameEvent) {
-    GameEvent[GameEvent["default"] = 0] = "default"; //
+    GameEvent[GameEvent["default"] = 0] = "default";
+    GameEvent[GameEvent["E_ACCOUNT_LOGIN"] = 1] = "E_ACCOUNT_LOGIN";
 })(GameEvent || (GameEvent = {}));
 /**实体类型定义 */
 var EntityType;

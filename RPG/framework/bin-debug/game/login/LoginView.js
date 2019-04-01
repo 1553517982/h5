@@ -13,12 +13,21 @@ var LoginView = (function (_super) {
     function LoginView() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    /**绑定事件 */
-    LoginView.prototype.bindAutoEvents = function () {
+    LoginView.prototype.onCreate = function () {
+        this.controller = new LoginController(this);
         this.Btn_login.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.onLogin, this);
+        _super.prototype.onCreate.call(this);
     };
+    /**点击登录按钮 */
     LoginView.prototype.onLogin = function () {
-        console.log("点击登录按钮");
+        var account = this.editext_account.text;
+        var password = this.editext_password.text;
+        this.controller.onLogin(account, password);
+    };
+    /**登录成功回调 */
+    LoginView.prototype.onLoginSuccess = function (response) {
+        console.log(response);
+        this.close();
     };
     return LoginView;
 }(BaseUI));

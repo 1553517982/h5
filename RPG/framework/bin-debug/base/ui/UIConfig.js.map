@@ -1,1 +1,1 @@
-{"version":3,"file":"UIConfig.js","sourceRoot":"","sources":["../../../src/base/ui/UIConfig.ts"],"names":[],"mappings":"AAAA,IAAM,QAAQ,GAAG;IAChB,WAAW,EAAE,EAAE,QAAQ,EAAE,sCAAsC,EAAE;CACjE,CAAA"}
+{"version":3,"file":"UIConfig.js","sourceRoot":"","sources":["../../../src/base/ui/UIConfig.ts"],"names":[],"mappings":"AAAA,IAAM,QAAQ,GAAG;IAChB,WAAW,EAAE,EAAE,QAAQ,EAAE,sCAAsC,EAAE,OAAO,EAAE,IAAI,EAAE;CAChF,CAAA"}

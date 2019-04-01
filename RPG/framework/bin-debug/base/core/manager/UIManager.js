@@ -48,9 +48,17 @@ var UIManager = (function () {
     UIManager.prototype.hideUI = function (viewName) {
         var viewInstance = this.openList[viewName];
         if (viewInstance) {
-            viewInstance.close();
-            this._windowContainer.removeChild(viewInstance);
-            delete this.openList[viewName];
+            if (viewInstance.hideDestroy) {
+                viewInstance.destroy();
+                this._windowContainer.removeChild(viewInstance);
+                delete this.openList[viewName];
+                delete this.viewList[viewName];
+            }
+            else {
+                viewInstance.onHide();
+                this._windowContainer.removeChild(viewInstance);
+                delete this.openList[viewName];
+            }
         }
     };
     /**销毁窗口 */
