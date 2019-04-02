@@ -23,7 +23,7 @@ class ViewController {
 	 */
 	public bindGameEvent(type: GameEvent, listener: Function, thisObject: any) {
 		if (!this.gameEventList[type]) {
-			var eventId = GameEventSystem.instance.add(type, listener, thisObject)
+			var eventId = App.EventSystem.add(type, listener, thisObject)
 			this.gameEventList[type] = eventId
 		}
 	}
@@ -35,7 +35,7 @@ class ViewController {
 	public unbindGameEvent(type: GameEvent) {
 		if (this.gameEventList[type]) {
 			var eventId = this.gameEventList[type]
-			GameEventSystem.instance.remove(eventId)
+			App.EventSystem.remove(eventId)
 			delete this.gameEventList[type]
 		}
 	}
@@ -44,7 +44,7 @@ class ViewController {
 	public pauseGameEvent() {
 		for (var eventType in this.gameEventList) {
 			var eventId = this.gameEventList[eventType]
-			GameEventSystem.instance.pause(eventId)
+			App.EventSystem.pause(eventId)
 		}
 	}
 
@@ -52,7 +52,7 @@ class ViewController {
 	public resumeGameEvent() {
 		for (var eventType in this.gameEventList) {
 			var eventId = this.gameEventList[eventType]
-			GameEventSystem.instance.resume(eventId)
+			App.EventSystem.resume(eventId)
 		}
 	}
 
@@ -81,7 +81,7 @@ class ViewController {
 		let events = Object.keys(this.gameEventList)
 		for (var i = 0; i < events.length; i++) {
 			var eventId = this.gameEventList[events[i]]
-			GameEventSystem.instance.remove(eventId)
+			App.EventSystem.remove(eventId)
 			delete this.gameEventList[events[i]]
 		}
 		this.gameEventList = {}

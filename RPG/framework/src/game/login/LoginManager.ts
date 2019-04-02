@@ -23,13 +23,13 @@ class LoginManager extends Manager {
 				}
 			}
 		}
-		GameEventSystem.instance.dispatch(GameEvent.E_ACCOUNT_LOGIN, response)
+		App.EventSystem.dispatch(GameEvent.E_ACCOUNT_LOGIN, response)
 	}
 
 	/**
 	 * 进入服务器成功
 	 */
 	public onEnterServerSuccess(serverid: string) {
-		GameEventSystem.instance.dispatch(GameEvent.E_ENTER_SERVER, serverid)
+		App.EventSystem.dispatch(GameEvent.E_ENTER_SERVER, serverid)
 	}
 }

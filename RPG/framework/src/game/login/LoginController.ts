@@ -23,12 +23,29 @@ class LoginController extends ViewController {
 	 * 进入服务器
 	 */
 	public onEnterServer(serverId: string) {
+
+		// 1.连接服务器
+		this.connectServer(serverId)
+		// 2.登录游戏帐号
+		// 3.处理服务器返回的角色信息
+
+
 		LoginManager.instance.onEnterServerSuccess(serverId)
 	}
-	/**进入服务器成功 */
-	public onEnterServerSuccess(serverId: string) {
-		this.view.onEnterServerSuccess(serverId)
-		App.GSManager.setState(GameStateDef.Gaming)
+	/**
+	 * 连接服务器
+	 * @param serverId 服务器id
+	 */
+	private connectServer(serverId: string) {
+		
+	}
+
+	/**进入服务器成功 
+	 * @param roleInfo  服务器角色信息  如果没有角色 需要走创角流程
+	*/
+	public onEnterServerSuccess(roleInfo: any) {
+		//this.view.onEnterServerSuccess(serverId)
+		//App.GSManager.setState(GameStateDef.Gaming)
 	}
 
 	/**处理登陆回调 */

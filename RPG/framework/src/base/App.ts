@@ -9,7 +9,7 @@ class App {
 	public static get GSManager(): GameStateManager {
 		return GameStateManager.instance
 	}
-	
+
 	/**全局窗口管理器 */
 	public static get UIManager(): UIManager {
 		return UIManager.instance
