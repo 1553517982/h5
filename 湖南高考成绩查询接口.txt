@@ -1,0 +1,10 @@
+查询参数  param= Base64("考号后10位"+"_"+"身份证后6位") 
+
+高考成绩查询:https://www.hneeb.cn/pzInter/edu?PARAMS=xxxx&FLAG=GKCJ&YZM=1234
+
+
+
+
+
+
+验证码：https://www.hneeb.cn/cmsInter/eduInterface/edu/v1/gkcj/image/ base64(参数)/随机数字
